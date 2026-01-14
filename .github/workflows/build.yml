@@ -26,10 +26,15 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
     
-    - name: Fix Android files
+    - name: Delete old mipmap files
       run: |
-        # Android projesini yeniden oluştur
+        rm -rf android/app/src/main/res/mipmap-*
+        echo "Eski icon dosyaları silindi"
+    
+    - name: Recreate Android project
+      run: |
         flutter create --platforms=android --org=com.example --project-name=funguard .
+        echo "Android projesi yeniden oluşturuldu"
         
     - name: Get dependencies
       run: flutter pub get
