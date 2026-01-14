@@ -26,18 +26,10 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
     
-    - name: Create icon directories
+    - name: Fix Android files
       run: |
-        mkdir -p android/app/src/main/res/mipmap-mdpi
-        mkdir -p android/app/src/main/res/mipmap-hdpi
-        mkdir -p android/app/src/main/res/mipmap-xhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxhdpi
-        mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-    
-    - name: Create launcher icons
-      run: |
-        chmod +x create_icons.sh
-        ./create_icons.sh
+        # Android projesini yeniden oluştur
+        flutter create --platforms=android --org=com.example --project-name=funguard .
         
     - name: Get dependencies
       run: flutter pub get
