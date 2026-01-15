@@ -26,26 +26,36 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
     
-    - name: Delete old mipmap files
+    - name: Deep Clean
       run: |
+        # Tüm cache dosyalarını sil
+        rm -rf pubspec.lock
+        rm -rf .dart_tool
+        rm -rf build
+        rm -rf .flutter-plugins
+        rm -rf .flutter-plugins-dependencies
+        rm -rf android/.gradle
+        rm -rf android/app/build
+        rm -rf android/build
         rm -rf android/app/src/main/res/mipmap-*
-        echo "Eski icon dosyaları silindi"
-    
-    - name: Clean Flutter
-      run: |
-        flutter clean
-        flutter pub get
         
-    - name: Recreate Android project
+        # Flutter temizle
+        flutter clean
+        
+        echo "Tam temizlik yapıldı"
+    
+    - name: Get dependencies
+      run: flutter pub get
+    
+    - name: Recreate Android
       run: |
         flutter create --platforms=android --org=com.example --project-name=funguard .
-        echo "Android projesi yeniden oluşturuldu"
         
-    - name: Get dependencies again
+    - name: Final pub get
       run: flutter pub get
       
     - name: Build APK
-      run: flutter build apk --release
+      run: flutter build apk --release --verbose
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
