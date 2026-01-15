@@ -31,12 +31,17 @@ jobs:
         rm -rf android/app/src/main/res/mipmap-*
         echo "Eski icon dosyaları silindi"
     
+    - name: Clean Flutter
+      run: |
+        flutter clean
+        flutter pub get
+        
     - name: Recreate Android project
       run: |
         flutter create --platforms=android --org=com.example --project-name=funguard .
         echo "Android projesi yeniden oluşturuldu"
         
-    - name: Get dependencies
+    - name: Get dependencies again
       run: flutter pub get
       
     - name: Build APK
