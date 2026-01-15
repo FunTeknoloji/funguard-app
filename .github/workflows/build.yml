@@ -37,7 +37,12 @@ jobs:
         rm -rf android/.gradle
         rm -rf android/app/build
         rm -rf android/build
+        rm -rf android/.idea
+        rm -rf android/local.properties
         rm -rf android/app/src/main/res/mipmap-*
+        
+        # Flutter pub cache repair (telephony'yi temizler)
+        flutter pub cache repair
         
         # Flutter temizle
         flutter clean
