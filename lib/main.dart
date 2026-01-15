@@ -4,11 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/history_screen.dart';
-import 'services/sms_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SmsService.initialize();
   runApp(const FunGuardApp());
 }
 
@@ -42,7 +40,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  bool _autoProtectionEnabled = false;
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -53,15 +50,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSettings();
     _requestPermissions();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _autoProtectionEnabled = prefs.getBool('auto_protection') ?? false;
-    });
   }
 
   Future<void> _requestPermissions() async {
