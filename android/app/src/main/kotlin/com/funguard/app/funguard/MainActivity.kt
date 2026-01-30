@@ -33,11 +33,18 @@ class MainActivity : FlutterActivity() {
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
 
         methodChannel?.setMethodCallHandler { call, result ->
-            if (call.method == "checkNotificationPermission") {
-                // Implementation for checking permission could go here
-                result.success(true)
-            } else {
-                result.notImplemented()
+            when (call.method) {
+                "checkNotificationPermission" -> {
+                    result.success(true)
+                }
+                "openNotificationSettings" -> {
+                    val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                    startActivity(intent)
+                    result.success(null)
+                }
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
     }

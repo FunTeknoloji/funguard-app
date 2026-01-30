@@ -36,9 +36,11 @@ dependencies:
   google_fonts: ^5.1.0
   shared_preferences: ^2.2.0
   flutter_local_notifications: ^15.1.0+1
+  vibration: ^1.8.4
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -53,6 +55,11 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/funguard_icon.png"
+
 flutter:
 
   # The following line ensures that the Material Icons font is

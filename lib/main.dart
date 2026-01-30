@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_state.dart';
 import 'ui/pages/dashboard_page.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -20,6 +22,7 @@ class FunGuardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FunGuard',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,

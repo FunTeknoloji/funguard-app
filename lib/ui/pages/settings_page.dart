@@ -33,6 +33,16 @@ class SettingsPage extends StatelessWidget {
             trailing: Text('1.0.0'),
           ),
           ListTile(
+            title: const Text('Bildirim Erişimini Aç'),
+            subtitle: const Text('Otomatik tarama için gereklidir.'),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () {
+              const intent = 'android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS';
+              const channel = MethodChannel('com.funguard.app/notifications');
+              channel.invokeMethod('openNotificationSettings');
+            },
+          ),
+          ListTile(
             title: const Text('USOM Listesini Güncelle'),
             trailing: const Icon(Icons.refresh),
             onTap: () async {

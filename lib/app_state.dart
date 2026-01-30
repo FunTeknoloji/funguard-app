@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:vibration/vibration.dart';
+import 'main.dart';
 import 'services/ai_service.dart';
 import 'services/usom_service.dart';
 import 'services/storage_service.dart';
@@ -72,6 +74,35 @@ class AppState extends ChangeNotifier {
   }
 
   void _showWarningNotification(String title, String body) async {
+    // Vibration
+    if (await Vibration.hasVibrator() ?? false) {
+      Vibration.vibrate(pattern: [500, 200, 500, 200, 500], intensities: [255, 255, 255, 255, 255]);
+    }
+
+    // Show Pop-up
+    if (navigatorKey.currentState != null) {
+      showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.red[900],
+          title: Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(child: Text(title, style: const TextStyle(color: Colors.white))),
+            ],
+          ),
+          content: Text(body, style: const TextStyle(color: Colors.white)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    }
+
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'funguard_alerts',
       'FunGuard Alerts',
@@ -79,6 +110,8 @@ class AppState extends ChangeNotifier {
       importance: Importance.max,
       priority: Priority.high,
       showWhen: true,
+      enableVibration: true,
+      playSound: true,
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(0, title, body, platformChannelSpecifics);

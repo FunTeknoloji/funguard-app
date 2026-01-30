@@ -15,7 +15,15 @@ class NotificationService : NotificationListenerService() {
 
         Log.d("NotificationService", "Notification from $packageName: $title - $text")
 
-        if (packageName == "com.whatsapp" || packageName == "org.telegram.messenger") {
+        val targetPackages = listOf(
+            "com.whatsapp",
+            "org.telegram.messenger",
+            "com.google.android.apps.messaging", // Google Messages (SMS)
+            "com.samsung.android.messaging",     // Samsung Messages
+            "com.android.mms"                     // Generic AOSP SMS
+        )
+
+        if (targetPackages.contains(packageName)) {
             // Send to Flutter
             val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
             intent.putExtra("package", packageName)
