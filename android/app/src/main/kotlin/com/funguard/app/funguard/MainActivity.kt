@@ -52,7 +52,11 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val filter = IntentFilter("com.funguard.NOTIFICATION_RECEIVED")
-        registerReceiver(notificationReceiver, filter)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(notificationReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(notificationReceiver, filter)
+        }
     }
 
     override fun onDestroy() {

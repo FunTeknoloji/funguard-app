@@ -15,7 +15,7 @@ class USOMService {
         _isLoaded = true;
       }
     } catch (e) {
-      print("USOM fetch error: $e");
+      // Failed to fetch USOM list
     }
   }
 

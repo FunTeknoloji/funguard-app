@@ -47,9 +47,11 @@ class SettingsPage extends StatelessWidget {
             trailing: const Icon(Icons.refresh),
             onTap: () async {
               await appState.usomService.fetchUrlList();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('USOM listesi güncellendi.')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('USOM listesi güncellendi.')),
+                );
+              }
             },
           ),
           const AboutListTile(

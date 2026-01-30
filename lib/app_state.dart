@@ -32,7 +32,7 @@ class AppState extends ChangeNotifier {
 
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
 
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'onNotificationReceived') {
@@ -67,9 +67,6 @@ class AppState extends ChangeNotifier {
     final result = await aiService.analyzeText(text);
 
     // If AI thinks it's dangerous, we should show a notification or pop-up
-    // For now, let's just log it. In a real app, we'd use flutter_local_notifications.
-    print("Incoming Notification Analysis: $result");
-
     if (result.toLowerCase().contains("dangerous") || result.toLowerCase().contains("fraud") || result.toLowerCase().contains("tehlikeli")) {
        _showWarningNotification("Şüpheli Mesaj Tespit Edildi!", "Gelen mesaj dolandırıcılık belirtileri içeriyor olabilir. Lütfen dikkatli olun.");
     }
@@ -77,7 +74,7 @@ class AppState extends ChangeNotifier {
 
   void _showWarningNotification(String title, String body) async {
     // Vibration
-    if (await Vibration.hasVibrator() ?? false) {
+    if (await Vibration.hasVibrator()) {
       Vibration.vibrate(pattern: [500, 200, 500, 200, 500], intensities: [255, 255, 255, 255, 255]);
     }
 
@@ -116,7 +113,12 @@ class AppState extends ChangeNotifier {
       playSound: true,
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, title, body, platformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
+    );
   }
 
   void setAutoScan(bool value) {
