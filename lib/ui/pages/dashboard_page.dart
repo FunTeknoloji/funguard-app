@@ -4,6 +4,7 @@ import '../../app_state.dart';
 import 'text_analysis_page.dart';
 import 'link_analysis_page.dart';
 import 'settings_page.dart';
+import 'general_analysis_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -46,10 +47,10 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   _buildCategoryCard(context, 'Metin Analizi', Icons.text_snippet, const TextAnalysisPage()),
                   _buildCategoryCard(context, 'Link Tarama', Icons.link, const LinkAnalysisPage()),
-                  _buildCategoryCard(context, 'SMS Koruması', Icons.sms, null),
-                  _buildCategoryCard(context, 'E-Posta Kontrol', Icons.email, null),
-                  _buildCategoryCard(context, 'Sosyal Medya', Icons.share, null),
-                  _buildCategoryCard(context, 'Arama Analizi', Icons.call, null),
+                  _buildCategoryCard(context, 'SMS Koruması', Icons.sms, const GeneralAnalysisPage(title: 'SMS Analizi', hintText: 'Gelen SMS içeriğini buraya yapıştırın...')),
+                  _buildCategoryCard(context, 'E-Posta Kontrol', Icons.email, const GeneralAnalysisPage(title: 'E-Posta Analizi', hintText: 'E-posta içeriğini veya gönderen bilgilerini yapıştırın...')),
+                  _buildCategoryCard(context, 'Sosyal Medya', Icons.share, const GeneralAnalysisPage(title: 'Sosyal Medya', hintText: 'DM veya sosyal medya mesajını buraya yapıştırın...')),
+                  _buildCategoryCard(context, 'Arama Analizi', Icons.call, const GeneralAnalysisPage(title: 'Arama Analizi', hintText: 'Sizi arayan numara veya konuşma içeriğini analiz edin...')),
                 ],
               ),
             ),

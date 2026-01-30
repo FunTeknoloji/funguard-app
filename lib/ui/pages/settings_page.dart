@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
 
@@ -37,8 +38,7 @@ class SettingsPage extends StatelessWidget {
             subtitle: const Text('Otomatik tarama için gereklidir.'),
             trailing: const Icon(Icons.open_in_new),
             onTap: () {
-              const intent = 'android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS';
-              const channel = MethodChannel('com.funguard.app/notifications');
+              final channel = MethodChannel('com.funguard.app/notifications');
               channel.invokeMethod('openNotificationSettings');
             },
           ),

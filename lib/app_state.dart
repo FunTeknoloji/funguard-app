@@ -18,10 +18,12 @@ class AppState extends ChangeNotifier {
   bool _isAutoScanEnabled = true;
   bool _isUSOMProtectionEnabled = true;
   bool _isInitialized = false;
+  bool _isAnalyzing = false;
 
   bool get isAutoScanEnabled => _isAutoScanEnabled;
   bool get isUSOMProtectionEnabled => _isUSOMProtectionEnabled;
   bool get isInitialized => _isInitialized;
+  bool get isAnalyzing => _isAnalyzing;
 
   Future<void> init() async {
     _isAutoScanEnabled = await storageService.getAutoScanEnabled();
@@ -127,5 +129,54 @@ class AppState extends ChangeNotifier {
     _isUSOMProtectionEnabled = value;
     storageService.setUSOMProtectionEnabled(value);
     notifyListeners();
+  }
+
+  Future<void> analyzeText(String text, BuildContext context) async {
+    if (text.isEmpty) return;
+    _isAnalyzing = true;
+    notifyListeners();
+
+    try {
+      final result = await aiService.analyzeText(text);
+      _isAnalyzing = false;
+      notifyListeners();
+
+      if (context.mounted) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: const Color(0xFF1E1E1E),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+          builder: (context) => Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Analiz Sonucu', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.purpleAccent)),
+                  const SizedBox(height: 15),
+                  Text(result, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.purple[700]),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Anladım', style: TextStyle(color: Colors.white)),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      _isAnalyzing = false;
+      notifyListeners();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Hata: $e')));
+      }
+    }
   }
 }
