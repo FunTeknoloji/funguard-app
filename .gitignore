@@ -1,0 +1,14 @@
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+lib/generated_plugin_registrant.dart
+test_results.txt
+android/**/generated/
+android/app/src/main/res/mipmap-*
+ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
+web/icons/*.png
+web/favicon.png
