@@ -14,7 +14,7 @@ class FunGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        val rootNode = rootInActiveWindow ?: return
+        val source = event.source ?: rootInActiveWindow ?: return
 
         val packageName = event.packageName?.toString() ?: ""
         val browserPackages = listOf(
@@ -22,11 +22,14 @@ class FunGuardAccessibilityService : AccessibilityService() {
             "org.mozilla.firefox",
             "com.sec.android.app.sbrowser",
             "com.opera.browser",
-            "com.microsoft.emmx"
+            "com.opera.mini.native",
+            "com.microsoft.emmx",
+            "com.duckduckgo.mobile.android",
+            "com.brave.browser"
         )
 
         if (browserPackages.contains(packageName)) {
-            val url = findUrl(rootNode)
+            val url = findUrl(source)
             if (url != null && url.isNotEmpty()) {
                 Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
                 val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
@@ -42,13 +45,23 @@ class FunGuardAccessibilityService : AccessibilityService() {
         val nodeQueue = mutableListOf<AccessibilityNodeInfo>()
         nodeQueue.add(nodeInfo)
 
-        while (nodeQueue.isNotEmpty()) {
+        var depth = 0
+        while (nodeQueue.isNotEmpty() && depth < 500) { // Safety limit
             val node = nodeQueue.removeAt(0)
+            depth++
 
             // Common ID names for address bars in various browsers
             val idName = node.viewIdResourceName ?: ""
-            if (idName.contains("url_bar") || idName.contains("url_edit_text") || idName.contains("location_bar")) {
-                val text = node.text?.toString()
+            val text = node.text?.toString()
+            val contentDesc = node.contentDescription?.toString()
+
+            if (idName.contains("url_bar") ||
+                idName.contains("url_edit_text") ||
+                idName.contains("location_bar") ||
+                idName.contains("address_bar") ||
+                idName.contains("search_src_text") ||
+                (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))) {
+
                 if (text != null && (text.startsWith("http") || text.contains("."))) {
                     return text
                 }

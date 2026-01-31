@@ -97,57 +97,61 @@ class _IntroductionPageState extends State<IntroductionPage> {
 
   Widget _buildPermissionPage(AppState appState) {
     return Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.lock_person_outlined, size: 80, color: Colors.purpleAccent),
-          const SizedBox(height: 30),
-          const Text("Gerekli İzinler", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 15),
-          const Text(
-            "FunGuard'ın sizi koruyabilmesi için aşağıdaki izinlere ihtiyacı vardır:",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.white70),
-          ),
-          const SizedBox(height: 40),
-          _buildPermissionTile(
-            title: "Bildirim Erişimi",
-            subtitle: "Mesajları analiz etmek için gereklidir.",
-            onTap: () => appState.openNotificationSettings(),
-          ),
-          const SizedBox(height: 15),
-          _buildPermissionTile(
-            title: "Üstte Görüntüleme",
-            subtitle: "Tehlike anında uyarı pop-up'ı göstermek için gereklidir.",
-            onTap: () => appState.requestOverlayPermission(),
-          ),
-          const SizedBox(height: 15),
-          _buildPermissionTile(
-            title: "Batarya İyileştirmesi",
-            subtitle: "Arka planda kesintisiz koruma için gereklidir.",
-            onTap: () => appState.requestBatteryOptimization(),
-          ),
-          const SizedBox(height: 15),
-          _buildPermissionTile(
-            title: "Erişilebilirlik (Canlı Takip)",
-            subtitle: "Tarayıcılardaki zararlı siteleri tespit etmek için gereklidir.",
-            onTap: () => appState.requestAccessibilityPermission(),
-          ),
-          const SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () async {
-               // In a real app we'd verify permissions here, but for now we proceed
-               await appState.finishOnboarding();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple[700],
-              padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 50),
+            const Icon(Icons.lock_person_outlined, size: 80, color: Colors.purpleAccent),
+            const SizedBox(height: 30),
+            const Text("Gerekli İzinler", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 15),
+            const Text(
+              "FunGuard'ın sizi koruyabilmesi için aşağıdaki izinlere ihtiyacı vardır:",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.white70),
             ),
-            child: const Text("BAŞLAT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
+            const SizedBox(height: 40),
+            _buildPermissionTile(
+              title: "Bildirim Erişimi",
+              subtitle: "Mesajları analiz etmek için gereklidir.",
+              onTap: () => appState.openNotificationSettings(),
+            ),
+            const SizedBox(height: 15),
+            _buildPermissionTile(
+              title: "Üstte Görüntüleme",
+              subtitle: "Tehlike anında uyarı pop-up'ı göstermek için gereklidir.",
+              onTap: () => appState.requestOverlayPermission(),
+            ),
+            const SizedBox(height: 15),
+            _buildPermissionTile(
+              title: "Batarya İyileştirmesi",
+              subtitle: "Arka planda kesintisiz koruma için gereklidir.",
+              onTap: () => appState.requestBatteryOptimization(),
+            ),
+            const SizedBox(height: 15),
+            _buildPermissionTile(
+              title: "Erişilebilirlik (Canlı Takip)",
+              subtitle: "Tarayıcılardaki zararlı siteleri tespit etmek için gereklidir.",
+              onTap: () => appState.requestAccessibilityPermission(),
+            ),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () async {
+                 // In a real app we'd verify permissions here, but for now we proceed
+                 await appState.finishOnboarding();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple[700],
+                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              ),
+              child: const Text("BAŞLAT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 120), // Bottom space for indicator and spacing
+          ],
+        ),
       ),
     );
   }

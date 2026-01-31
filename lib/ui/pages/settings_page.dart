@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart' as vibration;
 import '../../app_state.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -60,6 +61,17 @@ class SettingsPage extends StatelessWidget {
             title: 'Yardım & Destek',
             icon: Icons.help_outline,
             onTap: () {},
+          ),
+          _buildListTile(
+            title: 'Test Alarmı Çal',
+            icon: Icons.vibration,
+            onTap: () {
+              appState.soundService.playDanger();
+              vibration.Vibration.vibrate(pattern: [0, 500, 200, 500]);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Test alarmı ve titreşim tetiklendi'))
+              );
+            },
           ),
           const SizedBox(height: 40),
           Center(

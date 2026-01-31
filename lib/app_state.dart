@@ -72,7 +72,8 @@ class AppState extends ChangeNotifier {
 
     // Check for URLs and USOM matching
     if (_isUSOMProtectionEnabled) {
-      final urlRegex = RegExp(r'(https?:\/\/[^\s]+)');
+      // Improved regex to catch domains even without http/https
+      final urlRegex = RegExp(r'((https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))');
       final matches = urlRegex.allMatches(text);
       for (final match in matches) {
         final url = match.group(0);
@@ -94,6 +95,9 @@ class AppState extends ChangeNotifier {
   }
 
   void _showWarningNotification(String title, String body) async {
+    // Sound
+    await soundService.playDanger();
+
     // Vibration
     if (await Vibration.hasVibrator()) {
       Vibration.vibrate(pattern: [500, 200, 500, 200, 500], intensities: [255, 255, 255, 255, 255]);
@@ -201,9 +205,20 @@ class AppState extends ChangeNotifier {
       notifyListeners();
 
       if (context.mounted) {
-        if (result.toLowerCase().contains("güvenli")) {
+        final resultLower = result.toLowerCase();
+        if (resultLower.contains("güvenli") && !resultLower.contains("güvenli değil")) {
           soundService.playSafe();
+        } else if (resultLower.contains("tehlikeli") ||
+                   resultLower.contains("şüpheli") ||
+                   resultLower.contains("fraud") ||
+                   resultLower.contains("dangerous") ||
+                   resultLower.contains("dikkat")) {
+          soundService.playDanger();
+          if (await Vibration.hasVibrator()) {
+            Vibration.vibrate(pattern: [500, 200, 500], intensities: [255, 255, 255]);
+          }
         }
+
         showModalBottomSheet(
           context: context,
           backgroundColor: const Color(0xFF1E1E1E),
