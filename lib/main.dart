@@ -36,13 +36,9 @@ class DangerOverlay extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Center(
-        child: FutureBuilder(
-          future: FlutterOverlayWindow.getOverlayArgument(),
-          builder: (context, snapshot) {
+        child: Builder(
+          builder: (context) {
             String message = "Bu mesaj veya link dolandırıcılık amacı taşıyor olabilir.";
-            if (snapshot.hasData && snapshot.data is String) {
-              message = snapshot.data as String;
-            }
 
             return Container(
               padding: const EdgeInsets.all(20),

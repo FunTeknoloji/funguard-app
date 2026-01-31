@@ -38,7 +38,7 @@ class AppState extends ChangeNotifier {
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
 
     await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
     );
 
     _channel.setMethodCallHandler((call) async {
@@ -103,7 +103,7 @@ class AppState extends ChangeNotifier {
         enableDrag: true,
         overlayTitle: "FunGuard Tehlike Uyarısı",
         overlayContent: body,
-        flag: fow.OverlayFlag.focusThrough,
+        flag: fow.OverlayFlag.defaultFlag,
         alignment: fow.OverlayAlignment.center,
         visibility: fow.NotificationVisibility.visibilityPublic,
         positionGravity: fow.PositionGravity.auto,
@@ -146,10 +146,10 @@ class AppState extends ChangeNotifier {
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      0,
-      title,
-      body,
-      platformChannelSpecifics,
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
     );
   }
 
