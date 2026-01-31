@@ -20,22 +20,25 @@ class AppState extends ChangeNotifier {
   bool _isUSOMProtectionEnabled = true;
   bool _isInitialized = false;
   bool _isAnalyzing = false;
+  bool _hasFinishedOnboarding = false;
 
   bool get isAutoScanEnabled => _isAutoScanEnabled;
   bool get isUSOMProtectionEnabled => _isUSOMProtectionEnabled;
   bool get isInitialized => _isInitialized;
   bool get isAnalyzing => _isAnalyzing;
+  bool get hasFinishedOnboarding => _hasFinishedOnboarding;
 
   Future<void> init() async {
     _isAutoScanEnabled = await storageService.getAutoScanEnabled();
     _isUSOMProtectionEnabled = await storageService.getUSOMProtectionEnabled();
+    _hasFinishedOnboarding = await storageService.getHasFinishedOnboarding();
     await usomService.fetchUrlList();
 
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
 
     await flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
+      initializationSettings,
     );
 
     _channel.setMethodCallHandler((call) async {
@@ -100,7 +103,7 @@ class AppState extends ChangeNotifier {
         enableDrag: true,
         overlayTitle: "FunGuard Tehlike Uyarısı",
         overlayContent: body,
-        flag: fow.OverlayFlag.defaultFlag,
+        flag: fow.OverlayFlag.focusThrough,
         alignment: fow.OverlayAlignment.center,
         visibility: fow.NotificationVisibility.visibilityPublic,
         positionGravity: fow.PositionGravity.auto,
@@ -143,10 +146,10 @@ class AppState extends ChangeNotifier {
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      id: 0,
-      title: title,
-      body: body,
-      notificationDetails: platformChannelSpecifics,
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
     );
   }
 
@@ -168,6 +171,12 @@ class AppState extends ChangeNotifier {
 
   Future<void> requestOverlayPermission() async {
     await _channel.invokeMethod('requestOverlayPermission');
+  }
+
+  Future<void> finishOnboarding() async {
+    _hasFinishedOnboarding = true;
+    await storageService.setHasFinishedOnboarding(true);
+    notifyListeners();
   }
 
   Future<void> analyzeText(String text, BuildContext context) async {

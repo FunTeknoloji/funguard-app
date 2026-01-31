@@ -4,6 +4,12 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.content.Intent
 import android.util.Log
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.os.Build
+import androidx.core.app.NotificationCompat
 
 class NotificationService : NotificationListenerService() {
 
@@ -35,7 +41,47 @@ class NotificationService : NotificationListenerService() {
             intent.putExtra("title", title)
             intent.putExtra("text", text)
             sendBroadcast(intent)
+
+            // Simple native check for robustness when app is closed
+            val dangerousKeywords = listOf("banka", "şifre", "sifre", "hesap", "güncelle", "doğrula", "tehlike", "gift", "win", "kazandınız")
+            var isSuspicious = false
+            text?.let {
+                for (keyword in dangerousKeywords) {
+                    if (it.contains(keyword, ignoreCase = true)) {
+                        isSuspicious = true
+                        break
+                    }
+                }
+            }
+
+            if (isSuspicious) {
+                showNativeWarning(title ?: "Şüpheli Mesaj", "FunGuard: Bu mesaj şüpheli içerik barındırıyor olabilir!")
+            }
         }
+    }
+
+    private fun showNativeWarning(title: String, body: String) {
+        val channelId = "funguard_native_alerts"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "FunGuard Native Alerts", NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        notificationManager.notify(1, notification)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {

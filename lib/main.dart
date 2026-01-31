@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'app_state.dart';
+import 'ui/pages/introduction_page.dart';
 import 'ui/pages/dashboard_page.dart';
 import 'ui/pages/education_page.dart';
 import 'ui/pages/protection_page.dart';
@@ -34,49 +36,65 @@ class DangerOverlay extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.redAccent, width: 2),
-            boxShadow: [
-              BoxShadow(color: Colors.redAccent.withOpacity(0.5), blurRadius: 20, spreadRadius: 5),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.gpp_maybe, color: Colors.redAccent, size: 80),
-              const SizedBox(height: 20),
-              const Text(
-                "TEHLİKE TESPİT EDİLDİ!",
-                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+        child: FutureBuilder(
+          future: FlutterOverlayWindow.getOverlayArgument(),
+          builder: (context, snapshot) {
+            String message = "Bu mesaj veya link dolandırıcılık amacı taşıyor olabilir.";
+            if (snapshot.hasData && snapshot.data is String) {
+              message = snapshot.data as String;
+            }
+
+            return Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.95),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.redAccent, width: 2),
+                boxShadow: [
+                  BoxShadow(color: Colors.redAccent.withOpacity(0.5), blurRadius: 20, spreadRadius: 5),
+                ],
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Bu mesaj veya link dolandırıcılık amacı taşıyor olabilir.",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 16),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {}, // Handled by plugin normally
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
-                    child: const Text("YOKSAY"),
+                  const Icon(Icons.gpp_maybe, color: Colors.redAccent, size: 80),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "TEHLİKE TESPİT EDİLDİ!",
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                    child: const Text("ENGELLE"),
+                  const SizedBox(height: 15),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          await FlutterOverlayWindow.closeOverlay();
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
+                        child: const Text("YOKSAY"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          // Logic for blocking can be added here (e.g. notifying the service)
+                          await FlutterOverlayWindow.closeOverlay();
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                        child: const Text("ENGELLE"),
+                      ),
+                    ],
                   ),
                 ],
-              )
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -106,7 +124,14 @@ class FunGuardApp extends StatelessWidget {
         textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
-      home: const MainContainer(),
+      home: Consumer<AppState>(
+        builder: (context, appState, _) {
+          if (!appState.hasFinishedOnboarding) {
+            return const IntroductionPage();
+          }
+          return const MainContainer();
+        },
+      ),
     );
   }
 }

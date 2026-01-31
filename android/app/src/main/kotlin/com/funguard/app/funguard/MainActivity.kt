@@ -38,7 +38,8 @@ class MainActivity : FlutterActivity() {
         methodChannel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "checkNotificationPermission" -> {
-                    result.success(true)
+                    val enabled = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")?.contains(packageName) ?: false
+                    result.success(enabled)
                 }
                 "openNotificationSettings" -> {
                     val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
