@@ -31,10 +31,9 @@
 
         <service
             android:name=".FunGuardAccessibilityService"
-            android:label="@string/accessibility_label"
+            android:label="FunGuard Canlı Takip"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true"
-            android:directBootAware="true">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.view.accessibility.AccessibilityService" />
             </intent-filter>

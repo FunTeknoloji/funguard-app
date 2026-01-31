@@ -14,30 +14,27 @@ class FunGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        // We listen to window changes and content changes
+        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+            event.eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            return
+        }
+
         val source = event.source ?: rootInActiveWindow ?: return
-
         val packageName = event.packageName?.toString() ?: ""
-        val browserPackages = listOf(
-            "com.android.chrome",
-            "org.mozilla.firefox",
-            "com.sec.android.app.sbrowser",
-            "com.opera.browser",
-            "com.opera.mini.native",
-            "com.microsoft.emmx",
-            "com.duckduckgo.mobile.android",
-            "com.brave.browser"
-        )
 
-        if (browserPackages.contains(packageName)) {
-            val url = findUrl(source)
-            if (url != null && url.isNotEmpty()) {
-                Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
-                val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
-                intent.putExtra("package", packageName)
-                intent.putExtra("title", "Tarayıcı Tespiti")
-                intent.putExtra("text", url)
-                sendBroadcast(intent)
-            }
+        // Try to find URL in any package that might be a browser
+        // We include many but also try to be generic
+        val url = findUrl(source)
+        if (url != null && url.isNotEmpty()) {
+            Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
+
+            // Send broadcast for the app to process
+            val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
+            intent.putExtra("package", packageName)
+            intent.putExtra("title", "Tarayıcı Tespiti")
+            intent.putExtra("text", url)
+            sendBroadcast(intent)
         }
     }
 
@@ -46,23 +43,35 @@ class FunGuardAccessibilityService : AccessibilityService() {
         nodeQueue.add(nodeInfo)
 
         var depth = 0
-        while (nodeQueue.isNotEmpty() && depth < 500) { // Safety limit
+        while (nodeQueue.isNotEmpty() && depth < 1000) {
             val node = nodeQueue.removeAt(0)
             depth++
 
-            // Common ID names for address bars in various browsers
-            val idName = node.viewIdResourceName ?: ""
+            val className = node.className?.toString() ?: ""
             val text = node.text?.toString()
             val contentDesc = node.contentDescription?.toString()
+            val idName = node.viewIdResourceName ?: ""
 
-            if (idName.contains("url_bar") ||
-                idName.contains("url_edit_text") ||
-                idName.contains("location_bar") ||
-                idName.contains("address_bar") ||
-                idName.contains("search_src_text") ||
-                (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))) {
+            // Aggressive check for address bar
+            if (className.contains("EditText") || className.contains("TextView") || idName.isNotEmpty()) {
+                if (idName.contains("url", ignoreCase = true) ||
+                    idName.contains("address", ignoreCase = true) ||
+                    idName.contains("location", ignoreCase = true) ||
+                    idName.contains("search", ignoreCase = true) ||
+                    (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))) {
 
-                if (text != null && (text.startsWith("http") || text.contains("."))) {
+                    if (text != null && (text.startsWith("http") || text.contains("."))) {
+                        // Basic validation: must contain a dot and not be just whitespace
+                        if (text.contains(".") && !text.contains(" ") && text.length > 3) {
+                            return text
+                        }
+                    }
+                }
+            }
+
+            // Fallback: if it's an EditText and looks like a URL
+            if (className.contains("EditText") && text != null) {
+                if ((text.startsWith("http") || text.contains(".")) && !text.contains(" ") && text.contains(".")) {
                     return text
                 }
             }
