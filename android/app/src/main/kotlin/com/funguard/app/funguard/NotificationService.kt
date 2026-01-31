@@ -20,7 +20,12 @@ class NotificationService : NotificationListenerService() {
             "org.telegram.messenger",
             "com.google.android.apps.messaging", // Google Messages (SMS)
             "com.samsung.android.messaging",     // Samsung Messages
-            "com.android.mms"                     // Generic AOSP SMS
+            "com.android.mms",                    // Generic AOSP SMS
+            "com.android.chrome",                 // Chrome
+            "com.sec.android.app.sbrowser",      // Samsung Browser
+            "org.mozilla.firefox",               // Firefox
+            "com.android.phone",                 // Dialer
+            "com.google.android.dialer"          // Google Dialer
         )
 
         if (targetPackages.contains(packageName)) {

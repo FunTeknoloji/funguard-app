@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:vibration/vibration.dart';
 import 'main.dart';
 import 'services/ai_service.dart';
@@ -32,7 +33,7 @@ class AppState extends ChangeNotifier {
 
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-    await flutterLocalNotificationsPlugin.initialize(settings: initializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'onNotificationReceived') {
@@ -48,7 +49,18 @@ class AppState extends ChangeNotifier {
     if (!_isAutoScanEnabled) return;
 
     final String? text = arguments['text'];
+    final String? packageName = arguments['package'];
+
     if (text == null || text.isEmpty) return;
+
+    String sourceName = "Bilinmeyen";
+    if (packageName != null) {
+      if (packageName.contains("whatsapp")) sourceName = "WhatsApp";
+      else if (packageName.contains("telegram")) sourceName = "Telegram";
+      else if (packageName.contains("messaging") || packageName.contains("mms")) sourceName = "SMS";
+      else if (packageName.contains("chrome") || packageName.contains("browser") || packageName.contains("firefox")) sourceName = "Tarayıcı";
+      else if (packageName.contains("phone") || packageName.contains("dialer")) sourceName = "Arama";
+    }
 
     // Check for URLs and USOM matching
     if (_isUSOMProtectionEnabled) {
@@ -57,7 +69,7 @@ class AppState extends ChangeNotifier {
       for (final match in matches) {
         final url = match.group(0);
         if (url != null && usomService.isUrlMalicious(url)) {
-          _showWarningNotification("TEHLİKELİ LİNK TESPİT EDİLDİ!", "Mesajdaki link USOM kara listesinde yer alıyor: $url");
+          _showWarningNotification("TEHLİKELİ LİNK TESPİT EDİLDİ!", "$sourceName üzerinden gelen link USOM kara listesinde yer alıyor: $url");
           return; // Already found a threat
         }
       }
@@ -67,8 +79,8 @@ class AppState extends ChangeNotifier {
     final result = await aiService.analyzeText(text);
 
     // If AI thinks it's dangerous, we should show a notification or pop-up
-    if (result.toLowerCase().contains("dangerous") || result.toLowerCase().contains("fraud") || result.toLowerCase().contains("tehlikeli")) {
-       _showWarningNotification("Şüpheli Mesaj Tespit Edildi!", "Gelen mesaj dolandırıcılık belirtileri içeriyor olabilir. Lütfen dikkatli olun.");
+    if (result.toLowerCase().contains("dangerous") || result.toLowerCase().contains("fraud") || result.toLowerCase().contains("tehlikeli") || result.toLowerCase().contains("şüpheli")) {
+       _showWarningNotification("Şüpheli $sourceName İçeriği!", "Tespit edilen içerik dolandırıcılık veya zararlı niyet belirtileri içeriyor olabilir. Lütfen dikkatli olun.");
     }
   }
 
@@ -78,7 +90,21 @@ class AppState extends ChangeNotifier {
       Vibration.vibrate(pattern: [500, 200, 500, 200, 500], intensities: [255, 255, 255, 255, 255]);
     }
 
-    // Show Pop-up
+    // Show Overlay if possible
+    final bool isOverlayActive = await FlutterOverlayWindow.isActive();
+    if (!isOverlayActive) {
+      await FlutterOverlayWindow.showOverlay(
+        enableDrag: true,
+        overlayTitle: "FunGuard Tehlike Uyarısı",
+        overlayContent: body,
+        flag: OverlayFlag.focusThrough,
+        alignment: OverlayAlignment.center,
+        visibility: NotificationVisibility.visibilityPublic,
+        positionGravity: PositionGravity.auto,
+      );
+    }
+
+    // Also show Dialog if app is in foreground
     if (navigatorKey.currentState != null) {
       showDialog(
         context: navigatorKey.currentContext!,
@@ -114,10 +140,10 @@ class AppState extends ChangeNotifier {
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      id: 0,
-      title: title,
-      body: body,
-      notificationDetails: platformChannelSpecifics,
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
     );
   }
 
@@ -131,6 +157,14 @@ class AppState extends ChangeNotifier {
     _isUSOMProtectionEnabled = value;
     storageService.setUSOMProtectionEnabled(value);
     notifyListeners();
+  }
+
+  Future<void> openNotificationSettings() async {
+    await _channel.invokeMethod('openNotificationSettings');
+  }
+
+  Future<void> requestOverlayPermission() async {
+    await _channel.invokeMethod('requestOverlayPermission');
   }
 
   Future<void> analyzeText(String text, BuildContext context) async {

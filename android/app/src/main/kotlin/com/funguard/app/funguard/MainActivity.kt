@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -41,6 +44,25 @@ class MainActivity : FlutterActivity() {
                     val intent = Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
                     startActivity(intent)
                     result.success(null)
+                }
+                "checkOverlayPermission" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        result.success(Settings.canDrawOverlays(this))
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "requestOverlayPermission" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:$packageName")
+                        )
+                        startActivityForResult(intent, 123)
+                        result.success(null)
+                    } else {
+                        result.success(null)
+                    }
                 }
                 else -> {
                     result.notImplemented()

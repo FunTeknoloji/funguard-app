@@ -46,31 +46,52 @@ class _LinkAnalysisPageState extends State<LinkAnalysisPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Link Tarama')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Link Tarama', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                hintText: 'URL giriniz (örneğin: google.com)',
-                filled: true,
-                fillColor: Colors.grey[900],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.purple.withOpacity(0.2)),
+              ),
+              child: TextField(
+                controller: _controller,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'URL giriniz (örneğin: shp.scam/win)',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  border: InputBorder.none,
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _analyze,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[700],
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                gradient: const LinearGradient(colors: [Colors.purpleAccent, Colors.deepPurple]),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Detaylı Tarama Yap', style: TextStyle(fontSize: 16, color: Colors.white)),
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _analyze,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+                child: _isLoading
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Detaylı Tarama Yap', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
             ),
             const SizedBox(height: 30),
             if (_usomResult.isNotEmpty)

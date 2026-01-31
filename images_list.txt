@@ -1,0 +1,1 @@
+ls: cannot access 'assets/images/*': No such file or directory

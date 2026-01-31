@@ -19,36 +19,57 @@ class _GeneralAnalysisPageState extends State<GeneralAnalysisPage> {
     final appState = context.watch<AppState>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(
-                controller: _controller,
-                maxLines: 8,
-                decoration: InputDecoration(
-                  hintText: widget.hintText,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                  filled: true,
-                  fillColor: Colors.grey[900],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.purple.withOpacity(0.2)),
+                ),
+                child: TextField(
+                  controller: _controller,
+                  maxLines: 8,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: widget.hintText,
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    contentPadding: const EdgeInsets.all(20),
+                    border: InputBorder.none,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple[700],
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 60),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              const SizedBox(height: 25),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: const LinearGradient(colors: [Colors.purpleAccent, Colors.deepPurple]),
                 ),
-                onPressed: appState.isAnalyzing
-                    ? null
-                    : () => appState.analyzeText(_controller.text, context),
-                child: appState.isAnalyzing
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Yapay Zeka ile Analiz Et', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 60),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  onPressed: appState.isAnalyzing
+                      ? null
+                      : () => appState.analyzeText(_controller.text, context),
+                  child: appState.isAnalyzing
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text('Yapay Zeka ile Analiz Et', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
               ),
               const SizedBox(height: 30),
               _buildTips(),
