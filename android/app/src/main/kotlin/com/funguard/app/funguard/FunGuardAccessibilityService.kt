@@ -14,17 +14,11 @@ class FunGuardAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        // We listen to window changes and content changes
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
-            event.eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            return
-        }
-
+        // We look for URL in all window content changed, state changed, or focused events
         val source = event.source ?: rootInActiveWindow ?: return
         val packageName = event.packageName?.toString() ?: ""
 
-        // Try to find URL in any package that might be a browser
-        // We include many but also try to be generic
+        // Try to find URL
         val url = findUrl(source)
         if (url != null && url.isNotEmpty()) {
             Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
@@ -43,7 +37,8 @@ class FunGuardAccessibilityService : AccessibilityService() {
         nodeQueue.add(nodeInfo)
 
         var depth = 0
-        while (nodeQueue.isNotEmpty() && depth < 1000) {
+        // Increase depth limit for more complex pages
+        while (nodeQueue.isNotEmpty() && depth < 2000) {
             val node = nodeQueue.removeAt(0)
             depth++
 
@@ -52,27 +47,36 @@ class FunGuardAccessibilityService : AccessibilityService() {
             val contentDesc = node.contentDescription?.toString()
             val idName = node.viewIdResourceName ?: ""
 
-            // Aggressive check for address bar
-            if (className.contains("EditText") || className.contains("TextView") || idName.isNotEmpty()) {
-                if (idName.contains("url", ignoreCase = true) ||
-                    idName.contains("address", ignoreCase = true) ||
-                    idName.contains("location", ignoreCase = true) ||
-                    idName.contains("search", ignoreCase = true) ||
-                    (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))) {
+            // Comprehensive check for address bars and URL-like content
+            // We look for specific ID patterns commonly used in browsers
+            val isUrlBar = idName.contains("url", ignoreCase = true) ||
+                           idName.contains("address", ignoreCase = true) ||
+                           idName.contains("location", ignoreCase = true) ||
+                           idName.contains("search", ignoreCase = true) ||
+                           (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))
 
-                    if (text != null && (text.startsWith("http") || text.contains("."))) {
-                        // Basic validation: must contain a dot and not be just whitespace
-                        if (text.contains(".") && !text.contains(" ") && text.length > 3) {
-                            return text
+            if (isUrlBar || className.contains("EditText", ignoreCase = true)) {
+                if (text != null && text.length > 3) {
+                    val cleanText = text.trim()
+                    // URL heuristic: starts with http, or contains a dot and no spaces
+                    if (cleanText.startsWith("http") || (cleanText.contains(".") && !cleanText.contains(" "))) {
+                        // Avoid common false positives like "google.com" appearing in search buttons
+                        if (cleanText.contains(".") && cleanText.length > 4) {
+                            return cleanText
                         }
                     }
                 }
             }
 
-            // Fallback: if it's an EditText and looks like a URL
-            if (className.contains("EditText") && text != null) {
-                if ((text.startsWith("http") || text.contains(".")) && !text.contains(" ") && text.contains(".")) {
-                    return text
+            // General fallback: any node text that looks like a URL
+            if (text != null && text.length > 5 && !text.contains(" ")) {
+                if (text.startsWith("http://") || text.startsWith("https://") ||
+                    (text.contains(".") && text.split(".").last().length in 2..6)) {
+                    // Check if it's a valid-looking domain
+                    val domainRegex = Regex("""^(https?://)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(/.*)?$""")
+                    if (domainRegex.matches(text)) {
+                        return text
+                    }
                 }
             }
 
@@ -86,5 +90,7 @@ class FunGuardAccessibilityService : AccessibilityService() {
         return null
     }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        Log.d("FunGuardAccessibility", "Service Interrupted")
+    }
 }

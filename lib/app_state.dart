@@ -23,6 +23,7 @@ class AppState extends ChangeNotifier {
   bool _isInitialized = false;
   bool _isAnalyzing = false;
   bool _hasFinishedOnboarding = false;
+  String _lastClipboardData = "";
 
   bool get isAutoScanEnabled => _isAutoScanEnabled;
   bool get isUSOMProtectionEnabled => _isUSOMProtectionEnabled;
@@ -51,6 +52,31 @@ class AppState extends ChangeNotifier {
 
     _isInitialized = true;
     notifyListeners();
+    _startClipboardMonitoring();
+  }
+
+  void _startClipboardMonitoring() {
+    // Check clipboard every 5 seconds as a fallback detection feature
+    Stream.periodic(const Duration(seconds: 5)).listen((_) async {
+      if (!_isAutoScanEnabled) return;
+
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null && data.text != null && data.text!.isNotEmpty) {
+        final text = data.text!;
+        if (text != _lastClipboardData) {
+          _lastClipboardData = text;
+
+          // If it looks like a URL, analyze it
+          if (text.startsWith("http") || (text.contains(".") && !text.contains(" "))) {
+             _handleIncomingNotification({
+               'package': 'com.funguard.clipboard',
+               'title': 'Pano Tespiti',
+               'text': text
+             });
+          }
+        }
+      }
+    });
   }
 
   void _handleIncomingNotification(dynamic arguments) async {
