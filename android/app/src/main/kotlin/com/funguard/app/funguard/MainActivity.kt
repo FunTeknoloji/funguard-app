@@ -65,6 +65,19 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                 }
+                "requestBatteryOptimization" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                        intent.data = Uri.parse("package:$packageName")
+                        startActivity(intent)
+                    }
+                    result.success(null)
+                }
+                "requestAccessibilityPermission" -> {
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    startActivity(intent)
+                    result.success(null)
+                }
                 else -> {
                     result.notImplemented()
                 }

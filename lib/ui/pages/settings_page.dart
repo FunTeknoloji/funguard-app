@@ -27,8 +27,8 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.auto_awesome,
           ),
           _buildSwitchTile(
-            title: 'USOM Koruması',
-            subtitle: 'Zararlı linkleri USOM listesinden engelle',
+            title: 'Global Güvenlik Veritabanı',
+            subtitle: 'Bilinen zararlı bağlantıları otomatik engelle',
             value: appState.isUSOMProtectionEnabled,
             onChanged: (val) => appState.setUSOMProtection(val),
             icon: Icons.security,

@@ -27,7 +27,7 @@ class ProtectionPage extends StatelessWidget {
             _buildScanItem('WhatsApp Takibi', appState.isAutoScanEnabled),
             _buildScanItem('Telegram Takibi', appState.isAutoScanEnabled),
             _buildScanItem('SMS Koruması', appState.isAutoScanEnabled),
-            _buildScanItem('USOM URL Kontrolü', appState.isUSOMProtectionEnabled),
+            _buildScanItem('Güvenlik Veritabanı Kontrolü', appState.isUSOMProtectionEnabled),
             const SizedBox(height: 30),
             const Text('Son Tespitler', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
@@ -111,7 +111,7 @@ class ProtectionPage extends StatelessWidget {
       children: [
         _buildHistoryItem('WhatsApp', 'Şüpheli Link Engellendi', '12:45', Colors.orange),
         _buildHistoryItem('SMS', 'Dolandırıcılık Girişimi', 'Dün', Colors.red),
-        _buildHistoryItem('USOM', 'Zararlı Site Erişimi', '2 gün önce', Colors.red),
+        _buildHistoryItem('Veritabanı', 'Zararlı Site Erişimi', '2 gün önce', Colors.red),
       ],
     );
   }

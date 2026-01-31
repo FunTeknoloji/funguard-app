@@ -140,14 +140,23 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  isProtected ? 'KORUNUYORSUNUZ' : 'RİSK ALTINDASINIZ',
+                  isProtected ? 'TAM KORUMA' : 'RİSK VAR',
                   style: TextStyle(
                     color: primaryColor,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                   ),
                 ),
+                if (isProtected)
+                  const Text(
+                    'AKTİF',
+                    style: TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -161,7 +170,7 @@ class DashboardPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildBadge('AI Analiz', state.isAutoScanEnabled),
-        _buildBadge('USOM', state.isUSOMProtectionEnabled),
+        _buildBadge('Veritabanı', state.isUSOMProtectionEnabled),
         _buildBadge('Canlı Takip', state.isAutoScanEnabled),
       ],
     );

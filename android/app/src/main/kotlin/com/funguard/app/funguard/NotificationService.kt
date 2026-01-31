@@ -13,6 +13,30 @@ import androidx.core.app.NotificationCompat
 
 class NotificationService : NotificationListenerService() {
 
+    override fun onCreate() {
+        super.onCreate()
+        startForegroundService()
+    }
+
+    private fun startForegroundService() {
+        val channelId = "funguard_foreground_service"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "FunGuard Arka Plan Koruması", NotificationManager.IMPORTANCE_LOW)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("FunGuard Aktif")
+            .setContentText("Cihazınız anlık olarak korunuyor.")
+            .setSmallIcon(android.R.drawable.ic_lock_shield_lock)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        startForeground(1001, notification)
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val packageName = sbn.packageName
         val extras = sbn.notification.extras

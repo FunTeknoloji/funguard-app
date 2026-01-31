@@ -122,7 +122,19 @@ class _IntroductionPageState extends State<IntroductionPage> {
             subtitle: "Tehlike anında uyarı pop-up'ı göstermek için gereklidir.",
             onTap: () => appState.requestOverlayPermission(),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 15),
+          _buildPermissionTile(
+            title: "Batarya İyileştirmesi",
+            subtitle: "Arka planda kesintisiz koruma için gereklidir.",
+            onTap: () => appState.requestBatteryOptimization(),
+          ),
+          const SizedBox(height: 15),
+          _buildPermissionTile(
+            title: "Erişilebilirlik (Canlı Takip)",
+            subtitle: "Tarayıcılardaki zararlı siteleri tespit etmek için gereklidir.",
+            onTap: () => appState.requestAccessibilityPermission(),
+          ),
+          const SizedBox(height: 40),
           ElevatedButton(
             onPressed: () async {
                // In a real app we'd verify permissions here, but for now we proceed

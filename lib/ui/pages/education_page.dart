@@ -144,45 +144,127 @@ class EducationPage extends StatelessWidget {
     );
   }
 
-  Widget _buildArticleItem({required IconData icon, required Color iconColor, required String title, required String subtitle, required String tag, required String readTime}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildArticleItem({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String tag,
+    required String readTime
+  }) {
+    return Builder(
+      builder: (context) {
+        return InkWell(
+          onTap: () => _showArticleDetail(context, title, subtitle, icon, iconColor),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 15),
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.05)),
+            ),
+            child: Row(
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: iconColor.withOpacity(0.2), borderRadius: BorderRadius.circular(5)),
-                      child: Text(tag, style: TextStyle(color: iconColor, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 10),
-                    Text('• $readTime', style: const TextStyle(color: Colors.grey, fontSize: 10)),
-                  ],
-                )
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(icon, color: iconColor),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(color: iconColor.withOpacity(0.2), borderRadius: BorderRadius.circular(5)),
+                            child: Text(tag, style: TextStyle(color: iconColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                          const SizedBox(width: 10),
+                          Text('• $readTime', style: const TextStyle(color: Colors.grey, fontSize: 10)),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
+        );
+      }
+    );
+  }
+
+  void _showArticleDetail(BuildContext context, String title, String subtitle, IconData icon, Color color) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.black,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(25),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(color: Colors.grey[800], borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Icon(icon, color: color, size: 40),
+                  const SizedBox(width: 15),
+                  Expanded(child: Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(subtitle, style: const TextStyle(fontSize: 18, color: Colors.purpleAccent, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 20),
+              const Text(
+                "Detaylı Bilgilendirme:\n\n"
+                "Dolandırıcılık yöntemleri her geçen gün gelişmektedir. FunGuard olarak size en güncel korumayı sağlamaya çalışıyoruz. "
+                "Bu tür saldırılardan korunmak için asla şüpheli linklere tıklamayın ve kişisel bilgilerinizi paylaşmayın.\n\n"
+                "1. Kaynağı Doğrulayın: Gelen mesajın veya e-postanın gerçekten iddia edilen kurumdan gelip gelmediğini kontrol edin.\n\n"
+                "2. Acele Etmeyin: Dolandırıcılar genellikle sizi panikletmeye ve hızlı karar vermeye zorlar. Sakin kalın.\n\n"
+                "3. İki Faktörlü Doğrulama: Tüm hesaplarınızda 2FA özelliğini aktif hale getirin.\n\n"
+                "Unutmayın, hiçbir banka veya resmi kurum sizden şifrenizi SMS veya e-posta yoluyla istemez.",
+                style: TextStyle(fontSize: 16, height: 1.6, color: Colors.white70),
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple[700],
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  child: const Text('Anladım, Teşekkürler', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
       ),
     );
   }

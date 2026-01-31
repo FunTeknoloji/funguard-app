@@ -27,12 +27,12 @@ class _LinkAnalysisPageState extends State<LinkAnalysisPage> {
     final appState = context.read<AppState>();
     final url = _controller.text.trim();
 
-    // USOM Check
+    // Security Database Check
     final isMalicious = appState.usomService.isUrlMalicious(url);
     setState(() {
       _usomResult = isMalicious
-          ? "⚠️ TEHLİKELİ: Bu URL USOM kara listesinde bulunuyor!"
-          : "✅ USOM listesinde bulunamadı.";
+          ? "⚠️ TEHLİKELİ: Bu URL güvenlik veritabanı kara listesinde bulunuyor!"
+          : "✅ Güvenlik veritabanında şüpheli bir kayıt bulunamadı.";
     });
 
     // AI Check

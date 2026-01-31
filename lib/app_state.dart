@@ -7,11 +7,13 @@ import 'main.dart';
 import 'services/ai_service.dart';
 import 'services/usom_service.dart';
 import 'services/storage_service.dart';
+import 'services/sound_service.dart';
 
 class AppState extends ChangeNotifier {
   final AIService aiService = AIService();
   final USOMService usomService = USOMService();
   final StorageService storageService = StorageService();
+  final SoundService soundService = SoundService();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static const _channel = MethodChannel('com.funguard.app/notifications');
@@ -75,7 +77,7 @@ class AppState extends ChangeNotifier {
       for (final match in matches) {
         final url = match.group(0);
         if (url != null && usomService.isUrlMalicious(url)) {
-          _showWarningNotification("TEHLİKELİ LİNK TESPİT EDİLDİ!", "$sourceName üzerinden gelen link USOM kara listesinde yer alıyor: $url");
+          _showWarningNotification("TEHLİKELİ LİNK TESPİT EDİLDİ!", "$sourceName üzerinden gelen link güvenlik veritabanı kara listesinde yer alıyor: $url");
           return; // Already found a threat
         }
       }
@@ -86,6 +88,7 @@ class AppState extends ChangeNotifier {
 
     // If AI thinks it's dangerous, we should show a notification or pop-up
     if (result.toLowerCase().contains("dangerous") || result.toLowerCase().contains("fraud") || result.toLowerCase().contains("tehlikeli") || result.toLowerCase().contains("şüpheli")) {
+       soundService.playDanger();
        _showWarningNotification("Şüpheli $sourceName İçeriği!", "Tespit edilen içerik dolandırıcılık veya zararlı niyet belirtileri içeriyor olabilir. Lütfen dikkatli olun.");
     }
   }
@@ -173,6 +176,14 @@ class AppState extends ChangeNotifier {
     await _channel.invokeMethod('requestOverlayPermission');
   }
 
+  Future<void> requestBatteryOptimization() async {
+    await _channel.invokeMethod('requestBatteryOptimization');
+  }
+
+  Future<void> requestAccessibilityPermission() async {
+    await _channel.invokeMethod('requestAccessibilityPermission');
+  }
+
   Future<void> finishOnboarding() async {
     _hasFinishedOnboarding = true;
     await storageService.setHasFinishedOnboarding(true);
@@ -190,6 +201,9 @@ class AppState extends ChangeNotifier {
       notifyListeners();
 
       if (context.mounted) {
+        if (result.toLowerCase().contains("güvenli")) {
+          soundService.playSafe();
+        }
         showModalBottomSheet(
           context: context,
           backgroundColor: const Color(0xFF1E1E1E),
