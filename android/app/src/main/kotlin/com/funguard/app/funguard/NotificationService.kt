@@ -30,7 +30,7 @@ class NotificationService : NotificationListenerService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("FunGuard Aktif")
             .setContentText("Cihazınız anlık olarak korunuyor.")
-            .setSmallIcon(android.R.drawable.ic_lock_shield_lock)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
