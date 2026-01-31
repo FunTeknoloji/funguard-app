@@ -214,6 +214,10 @@ class AppState extends ChangeNotifier {
     await _channel.invokeMethod('requestAccessibilityPermission');
   }
 
+  void triggerManualWarning(String title, String body) {
+    _showWarningNotification(title, body);
+  }
+
   Future<void> finishOnboarding() async {
     _hasFinishedOnboarding = true;
     await storageService.setHasFinishedOnboarding(true);

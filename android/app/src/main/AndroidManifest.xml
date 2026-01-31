@@ -33,11 +33,12 @@
         </service>
 
         <service
-            android:name="com.funguard.app.funguard.FunGuardAccessibilityService"
+            android:name=".FunGuardAccessibilityService"
             android:label="@string/accessibility_label"
             android:description="@string/accessibility_description"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="android.view.accessibility.AccessibilityService" />
             </intent-filter>

@@ -68,8 +68,29 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               appState.soundService.playDanger();
               vibration.Vibration.vibrate(pattern: [0, 500, 200, 500]);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Test alarmı ve titreşim tetiklendi'))
+
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.red[900],
+                  title: const Row(
+                    children: [
+                      Icon(Icons.warning, color: Colors.white),
+                      SizedBox(width: 10),
+                      Text('TEST ALARMI', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                  content: const Text(
+                    'Bu bir test alarmıdır. Ses ve titreşim şu an çalışıyor olmalıdır.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
               );
             },
           ),

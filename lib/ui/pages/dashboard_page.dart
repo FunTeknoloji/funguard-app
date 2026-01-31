@@ -4,6 +4,7 @@ import '../../app_state.dart';
 import 'text_analysis_page.dart';
 import 'link_analysis_page.dart';
 import 'general_analysis_page.dart';
+import 'browser_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -209,6 +210,7 @@ class DashboardPage extends StatelessWidget {
               _buildModernCard(context, 'E-Posta', Icons.email_rounded, const GeneralAnalysisPage(title: 'E-Posta Analizi', hintText: 'E-posta içeriğini yapıştırın...')),
               _buildModernCard(context, 'Sosyal Medya', Icons.people_rounded, const GeneralAnalysisPage(title: 'Sosyal Medya', hintText: 'Mesajı yapıştırın...')),
               _buildModernCard(context, 'Arama Takip', Icons.call_rounded, const GeneralAnalysisPage(title: 'Arama Analizi', hintText: 'Numara veya görüşme detaylarını yazın...')),
+              _buildModernCard(context, 'Güvenli Tarayıcı', Icons.language_rounded, const BrowserPage()),
             ],
           ),
         ],
