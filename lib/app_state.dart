@@ -24,8 +24,14 @@ class AppState extends ChangeNotifier {
   bool _isAnalyzing = false;
   bool _hasFinishedOnboarding = false;
   String _lastClipboardData = "";
+  double _aiSensitivity = 0.7;
+  int _updateInterval = 24;
+  bool _isKritikBildirimEnabled = true;
 
   bool get isAutoScanEnabled => _isAutoScanEnabled;
+  double get aiSensitivity => _aiSensitivity;
+  int get updateInterval => _updateInterval;
+  bool get isKritikBildirimEnabled => _isKritikBildirimEnabled;
   bool get isUSOMProtectionEnabled => _isUSOMProtectionEnabled;
   bool get isInitialized => _isInitialized;
   bool get isAnalyzing => _isAnalyzing;
@@ -121,8 +127,8 @@ class AppState extends ChangeNotifier {
   }
 
   void _showWarningNotification(String title, String body) async {
-    // Sound
-    await soundService.playDanger();
+    // Sound - Play immediately and don't await too long
+    soundService.playDanger();
 
     // Vibration
     if (await Vibration.hasVibrator()) {
@@ -147,20 +153,30 @@ class AppState extends ChangeNotifier {
     if (navigatorKey.currentState != null) {
       showDialog(
         context: navigatorKey.currentContext!,
+        barrierDismissible: false,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.red[900],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
-              const Icon(Icons.warning, color: Colors.white),
+              const Icon(Icons.warning, color: Colors.white, size: 30),
               const SizedBox(width: 10),
-              Expanded(child: Text(title, style: const TextStyle(color: Colors.white))),
+              Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
             ],
           ),
           content: Text(body, style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('YOKSAY', style: TextStyle(color: Colors.white70)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.red[900]),
+              onPressed: () {
+                Navigator.pop(context);
+                _blockAction();
+              },
+              child: const Text('ENGELLE', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -196,6 +212,33 @@ class AppState extends ChangeNotifier {
     _isUSOMProtectionEnabled = value;
     storageService.setUSOMProtectionEnabled(value);
     notifyListeners();
+  }
+
+  void setAiSensitivity(double value) {
+    _aiSensitivity = value;
+    notifyListeners();
+  }
+
+  void setUpdateInterval(int value) {
+    _updateInterval = value;
+    notifyListeners();
+  }
+
+  void setKritikBildirim(bool value) {
+    _isKritikBildirimEnabled = value;
+    notifyListeners();
+  }
+
+  void _blockAction() async {
+    // Attempt to go back or close the browser
+    await _channel.invokeMethod('performBackAction');
+
+    // If it's the in-app browser, we should try to pop it
+    if (navigatorKey.currentState != null) {
+       // We can't easily know if we are on BrowserPage here without state,
+       // but we can try to pop if it's not the dashboard.
+       // For now, let's just trigger the native back action which is more global.
+    }
   }
 
   Future<void> openNotificationSettings() async {

@@ -53,7 +53,7 @@ class _BrowserPageState extends State<BrowserPage> {
 
     // USOM Check
     if (appState.usomService.isUrlMalicious(url)) {
-      appState.triggerManualWarning(
+      _showBrowserWarning(
         "ZARARLI SİTE ENGELLEME!",
         "Girmeye çalıştığınız site ($url) güvenlik veritabanımızda kara listededir. Lütfen derhal uzaklaşın!"
       );
@@ -64,12 +64,47 @@ class _BrowserPageState extends State<BrowserPage> {
     if (url.contains("login") || url.contains("verify") || url.contains("update") || url.contains("account")) {
       final result = await appState.aiService.analyzeText("Girilmeye çalışılan web adresi: $url");
       if (result.toLowerCase().contains("tehlikeli") || result.toLowerCase().contains("şüpheli")) {
-        appState.triggerManualWarning(
+        _showBrowserWarning(
           "ŞÜPHELİ SİTE TESPİTİ!",
           "Yapay zeka bu siteyi şüpheli olarak işaretledi: $url\n\nAnaliz: $result"
         );
       }
     }
+  }
+
+  void _showBrowserWarning(String title, String body) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.red[900],
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning, color: Colors.white, size: 30),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          ],
+        ),
+        content: Text(body, style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('YOKSAY', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.red[900]),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close browser
+            },
+            child: const Text('ENGELLE', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    // Trigger sound and vibration through appState
+    context.read<AppState>().soundService.playDanger();
   }
 
   void _loadUrl() {

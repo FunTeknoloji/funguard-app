@@ -62,36 +62,38 @@ class SettingsPage extends StatelessWidget {
             icon: Icons.help_outline,
             onTap: () {},
           ),
+          const SizedBox(height: 20),
+          _buildSectionHeader('Gelişmiş Ayarlar'),
+          _buildSliderTile(
+            title: 'AI Hassasiyeti',
+            subtitle: 'Düşük hassasiyet daha az uyarı demektir',
+            value: appState.aiSensitivity,
+            onChanged: (val) => appState.setAiSensitivity(val),
+            icon: Icons.psychology,
+          ),
+          _buildSwitchTile(
+            title: 'Kritik Bildirimler',
+            subtitle: 'Tehlike anında tam ekran uyarı göster',
+            value: appState.isKritikBildirimEnabled,
+            onChanged: (val) => appState.setKritikBildirim(val),
+            icon: Icons.warning_amber_rounded,
+          ),
           _buildListTile(
-            title: 'Test Alarmı Çal',
-            icon: Icons.vibration,
+            title: 'Veritabanı Güncelleme Sıklığı',
+            icon: Icons.update,
             onTap: () {
-              appState.soundService.playDanger();
-              vibration.Vibration.vibrate(pattern: [0, 500, 200, 500]);
-
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: Colors.red[900],
-                  title: const Row(
-                    children: [
-                      Icon(Icons.warning, color: Colors.white),
-                      SizedBox(width: 10),
-                      Text('TEST ALARMI', style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
-                  content: const Text(
-                    'Bu bir test alarmıdır. Ses ve titreşim şu an çalışıyor olmalıdır.',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              );
+               showDialog(
+                 context: context,
+                 builder: (context) => SimpleDialog(
+                   title: const Text('Güncelleme Sıklığı'),
+                   backgroundColor: Colors.grey[900],
+                   children: [
+                     _buildDialogOption(context, '6 Saat', 6, appState),
+                     _buildDialogOption(context, '12 Saat', 12, appState),
+                     _buildDialogOption(context, '24 Saat', 24, appState),
+                   ],
+                 ),
+               );
             },
           ),
           const SizedBox(height: 40),
@@ -166,6 +168,43 @@ class SettingsPage extends StatelessWidget {
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,
       ),
+    );
+  }
+
+  Widget _buildSliderTile({required String title, required String subtitle, required double value, required Function(double) onChanged, required IconData icon}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(icon, color: Colors.purpleAccent),
+            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          ),
+          Slider(
+            value: value,
+            onChanged: onChanged,
+            activeColor: Colors.purpleAccent,
+            inactiveColor: Colors.grey[800],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDialogOption(BuildContext context, String label, int value, AppState state) {
+    return SimpleDialogOption(
+      onPressed: () {
+        state.setUpdateInterval(value);
+        Navigator.pop(context);
+      },
+      child: Text(label, style: const TextStyle(color: Colors.white)),
     );
   }
 }

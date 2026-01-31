@@ -19,8 +19,10 @@ class SoundService {
 
   Future<void> playDanger() async {
     try {
+      await _player.stop();
       await _player.setReleaseMode(ReleaseMode.stop);
-      await _player.play(UrlSource(dangerSound));
+      // Using low latency mode for immediate feedback
+      await _player.play(UrlSource(dangerSound), mode: PlayerMode.lowLatency);
     } catch (e) {
       print("Error playing danger sound: $e");
     }

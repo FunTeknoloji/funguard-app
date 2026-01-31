@@ -8,9 +8,23 @@ import android.util.Log
 
 class FunGuardAccessibilityService : AccessibilityService() {
 
+    companion object {
+        var instance: FunGuardAccessibilityService? = null
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
         Log.d("FunGuardAccessibility", "Service Connected")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
+    }
+
+    fun performBackAction() {
+        performGlobalAction(GLOBAL_ACTION_BACK)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
