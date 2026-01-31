@@ -8,33 +8,41 @@ import android.util.Log
 
 class FunGuardAccessibilityService : AccessibilityService() {
 
+    companion object {
+        var instance: FunGuardAccessibilityService? = null
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
         Log.d("FunGuardAccessibility", "Service Connected")
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
+    }
+
+    fun performBackAction() {
+        performGlobalAction(GLOBAL_ACTION_BACK)
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        val rootNode = rootInActiveWindow ?: return
-
+        // We look for URL in all window content changed, state changed, or focused events
+        val source = event.source ?: rootInActiveWindow ?: return
         val packageName = event.packageName?.toString() ?: ""
-        val browserPackages = listOf(
-            "com.android.chrome",
-            "org.mozilla.firefox",
-            "com.sec.android.app.sbrowser",
-            "com.opera.browser",
-            "com.microsoft.emmx"
-        )
 
-        if (browserPackages.contains(packageName)) {
-            val url = findUrl(rootNode)
-            if (url != null && url.isNotEmpty()) {
-                Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
-                val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
-                intent.putExtra("package", packageName)
-                intent.putExtra("title", "Tarayıcı Tespiti")
-                intent.putExtra("text", url)
-                sendBroadcast(intent)
-            }
+        // Try to find URL
+        val url = findUrl(source)
+        if (url != null && url.isNotEmpty()) {
+            Log.d("FunGuardAccessibility", "Detected URL: $url in $packageName")
+
+            // Send broadcast for the app to process
+            val intent = Intent("com.funguard.NOTIFICATION_RECEIVED")
+            intent.putExtra("package", packageName)
+            intent.putExtra("title", "Tarayıcı Tespiti")
+            intent.putExtra("text", url)
+            sendBroadcast(intent)
         }
     }
 
@@ -42,15 +50,47 @@ class FunGuardAccessibilityService : AccessibilityService() {
         val nodeQueue = mutableListOf<AccessibilityNodeInfo>()
         nodeQueue.add(nodeInfo)
 
-        while (nodeQueue.isNotEmpty()) {
+        var depth = 0
+        // Increase depth limit for more complex pages
+        while (nodeQueue.isNotEmpty() && depth < 2000) {
             val node = nodeQueue.removeAt(0)
+            depth++
 
-            // Common ID names for address bars in various browsers
+            val className = node.className?.toString() ?: ""
+            val text = node.text?.toString()
+            val contentDesc = node.contentDescription?.toString()
             val idName = node.viewIdResourceName ?: ""
-            if (idName.contains("url_bar") || idName.contains("url_edit_text") || idName.contains("location_bar")) {
-                val text = node.text?.toString()
-                if (text != null && (text.startsWith("http") || text.contains("."))) {
-                    return text
+
+            // Comprehensive check for address bars and URL-like content
+            // We look for specific ID patterns commonly used in browsers
+            val isUrlBar = idName.contains("url", ignoreCase = true) ||
+                           idName.contains("address", ignoreCase = true) ||
+                           idName.contains("location", ignoreCase = true) ||
+                           idName.contains("search", ignoreCase = true) ||
+                           (contentDesc != null && (contentDesc.contains("Adres", ignoreCase = true) || contentDesc.contains("Address", ignoreCase = true)))
+
+            if (isUrlBar || className.contains("EditText", ignoreCase = true)) {
+                if (text != null && text.length > 3) {
+                    val cleanText = text.trim()
+                    // URL heuristic: starts with http, or contains a dot and no spaces
+                    if (cleanText.startsWith("http") || (cleanText.contains(".") && !cleanText.contains(" "))) {
+                        // Avoid common false positives like "google.com" appearing in search buttons
+                        if (cleanText.contains(".") && cleanText.length > 4) {
+                            return cleanText
+                        }
+                    }
+                }
+            }
+
+            // General fallback: any node text that looks like a URL
+            if (text != null && text.length > 5 && !text.contains(" ")) {
+                if (text.startsWith("http://") || text.startsWith("https://") ||
+                    (text.contains(".") && text.split(".").last().length in 2..6)) {
+                    // Check if it's a valid-looking domain
+                    val domainRegex = Regex("""^(https?://)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}(/.*)?$""")
+                    if (domainRegex.matches(text)) {
+                        return text
+                    }
                 }
             }
 
@@ -64,5 +104,7 @@ class FunGuardAccessibilityService : AccessibilityService() {
         return null
     }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        Log.d("FunGuardAccessibility", "Service Interrupted")
+    }
 }

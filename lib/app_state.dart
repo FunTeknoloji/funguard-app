@@ -23,8 +23,15 @@ class AppState extends ChangeNotifier {
   bool _isInitialized = false;
   bool _isAnalyzing = false;
   bool _hasFinishedOnboarding = false;
+  String _lastClipboardData = "";
+  double _aiSensitivity = 0.7;
+  int _updateInterval = 24;
+  bool _isKritikBildirimEnabled = true;
 
   bool get isAutoScanEnabled => _isAutoScanEnabled;
+  double get aiSensitivity => _aiSensitivity;
+  int get updateInterval => _updateInterval;
+  bool get isKritikBildirimEnabled => _isKritikBildirimEnabled;
   bool get isUSOMProtectionEnabled => _isUSOMProtectionEnabled;
   bool get isInitialized => _isInitialized;
   bool get isAnalyzing => _isAnalyzing;
@@ -51,6 +58,31 @@ class AppState extends ChangeNotifier {
 
     _isInitialized = true;
     notifyListeners();
+    _startClipboardMonitoring();
+  }
+
+  void _startClipboardMonitoring() {
+    // Check clipboard every 5 seconds as a fallback detection feature
+    Stream.periodic(const Duration(seconds: 5)).listen((_) async {
+      if (!_isAutoScanEnabled) return;
+
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null && data.text != null && data.text!.isNotEmpty) {
+        final text = data.text!;
+        if (text != _lastClipboardData) {
+          _lastClipboardData = text;
+
+          // If it looks like a URL, analyze it
+          if (text.startsWith("http") || (text.contains(".") && !text.contains(" "))) {
+             _handleIncomingNotification({
+               'package': 'com.funguard.clipboard',
+               'title': 'Pano Tespiti',
+               'text': text
+             });
+          }
+        }
+      }
+    });
   }
 
   void _handleIncomingNotification(dynamic arguments) async {
@@ -72,7 +104,8 @@ class AppState extends ChangeNotifier {
 
     // Check for URLs and USOM matching
     if (_isUSOMProtectionEnabled) {
-      final urlRegex = RegExp(r'(https?:\/\/[^\s]+)');
+      // Improved regex to catch domains even without http/https
+      final urlRegex = RegExp(r'((https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))');
       final matches = urlRegex.allMatches(text);
       for (final match in matches) {
         final url = match.group(0);
@@ -94,6 +127,9 @@ class AppState extends ChangeNotifier {
   }
 
   void _showWarningNotification(String title, String body) async {
+    // Sound - Play immediately and don't await too long
+    soundService.playDanger();
+
     // Vibration
     if (await Vibration.hasVibrator()) {
       Vibration.vibrate(pattern: [500, 200, 500, 200, 500], intensities: [255, 255, 255, 255, 255]);
@@ -117,20 +153,30 @@ class AppState extends ChangeNotifier {
     if (navigatorKey.currentState != null) {
       showDialog(
         context: navigatorKey.currentContext!,
+        barrierDismissible: false,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.red[900],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
-              const Icon(Icons.warning, color: Colors.white),
+              const Icon(Icons.warning, color: Colors.white, size: 30),
               const SizedBox(width: 10),
-              Expanded(child: Text(title, style: const TextStyle(color: Colors.white))),
+              Expanded(child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
             ],
           ),
           content: Text(body, style: const TextStyle(color: Colors.white)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('TAMAM', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text('YOKSAY', style: TextStyle(color: Colors.white70)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.red[900]),
+              onPressed: () {
+                Navigator.pop(context);
+                _blockAction();
+              },
+              child: const Text('ENGELLE', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -168,6 +214,33 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setAiSensitivity(double value) {
+    _aiSensitivity = value;
+    notifyListeners();
+  }
+
+  void setUpdateInterval(int value) {
+    _updateInterval = value;
+    notifyListeners();
+  }
+
+  void setKritikBildirim(bool value) {
+    _isKritikBildirimEnabled = value;
+    notifyListeners();
+  }
+
+  void _blockAction() async {
+    // Attempt to go back or close the browser
+    await _channel.invokeMethod('performBackAction');
+
+    // If it's the in-app browser, we should try to pop it
+    if (navigatorKey.currentState != null) {
+       // We can't easily know if we are on BrowserPage here without state,
+       // but we can try to pop if it's not the dashboard.
+       // For now, let's just trigger the native back action which is more global.
+    }
+  }
+
   Future<void> openNotificationSettings() async {
     await _channel.invokeMethod('openNotificationSettings');
   }
@@ -182,6 +255,10 @@ class AppState extends ChangeNotifier {
 
   Future<void> requestAccessibilityPermission() async {
     await _channel.invokeMethod('requestAccessibilityPermission');
+  }
+
+  void triggerManualWarning(String title, String body) {
+    _showWarningNotification(title, body);
   }
 
   Future<void> finishOnboarding() async {
@@ -201,9 +278,20 @@ class AppState extends ChangeNotifier {
       notifyListeners();
 
       if (context.mounted) {
-        if (result.toLowerCase().contains("güvenli")) {
+        final resultLower = result.toLowerCase();
+        if (resultLower.contains("güvenli") && !resultLower.contains("güvenli değil")) {
           soundService.playSafe();
+        } else if (resultLower.contains("tehlikeli") ||
+                   resultLower.contains("şüpheli") ||
+                   resultLower.contains("fraud") ||
+                   resultLower.contains("dangerous") ||
+                   resultLower.contains("dikkat")) {
+          soundService.playDanger();
+          if (await Vibration.hasVibrator()) {
+            Vibration.vibrate(pattern: [500, 200, 500], intensities: [255, 255, 255]);
+          }
         }
+
         showModalBottomSheet(
           context: context,
           backgroundColor: const Color(0xFF1E1E1E),

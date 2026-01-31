@@ -78,6 +78,10 @@ class MainActivity : FlutterActivity() {
                     startActivity(intent)
                     result.success(null)
                 }
+                "performBackAction" -> {
+                    FunGuardAccessibilityService.instance?.performBackAction()
+                    result.success(true)
+                }
                 else -> {
                     result.notImplemented()
                 }

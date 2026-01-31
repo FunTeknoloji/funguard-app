@@ -27,6 +27,8 @@ class ProtectionPage extends StatelessWidget {
             _buildScanItem('WhatsApp Takibi', appState.isAutoScanEnabled),
             _buildScanItem('Telegram Takibi', appState.isAutoScanEnabled),
             _buildScanItem('SMS Koruması', appState.isAutoScanEnabled),
+            _buildScanItem('Canlı Site Takibi', true),
+            _buildScanItem('Pano (Clipboard) Koruması', appState.isAutoScanEnabled),
             _buildScanItem('Güvenlik Veritabanı Kontrolü', appState.isUSOMProtectionEnabled),
             const SizedBox(height: 30),
             const Text('Son Tespitler', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
