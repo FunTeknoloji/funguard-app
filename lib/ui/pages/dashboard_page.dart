@@ -127,8 +127,7 @@ class DashboardPage extends StatelessWidget {
                   color: primaryColor.withOpacity(0.1),
                   blurRadius: 20,
                   spreadRadius: 5,
-                  inset: true,
-                ) as BoxShadow,
+                ),
               ],
             ),
             child: Column(

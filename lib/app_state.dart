@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart' as fow;
 import 'package:vibration/vibration.dart';
 import 'main.dart';
 import 'services/ai_service.dart';
@@ -33,7 +33,10 @@ class AppState extends ChangeNotifier {
 
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    await flutterLocalNotificationsPlugin.initialize(
+      settings: initializationSettings,
+    );
 
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'onNotificationReceived') {
@@ -91,16 +94,16 @@ class AppState extends ChangeNotifier {
     }
 
     // Show Overlay if possible
-    final bool isOverlayActive = await FlutterOverlayWindow.isActive();
+    final bool isOverlayActive = await fow.FlutterOverlayWindow.isActive();
     if (!isOverlayActive) {
-      await FlutterOverlayWindow.showOverlay(
+      await fow.FlutterOverlayWindow.showOverlay(
         enableDrag: true,
         overlayTitle: "FunGuard Tehlike Uyarısı",
         overlayContent: body,
-        flag: OverlayFlag.focusThrough,
-        alignment: OverlayAlignment.center,
-        visibility: NotificationVisibility.visibilityPublic,
-        positionGravity: PositionGravity.auto,
+        flag: fow.OverlayFlag.defaultFlag,
+        alignment: fow.OverlayAlignment.center,
+        visibility: fow.NotificationVisibility.visibilityPublic,
+        positionGravity: fow.PositionGravity.auto,
       );
     }
 
@@ -140,10 +143,10 @@ class AppState extends ChangeNotifier {
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      0,
-      title,
-      body,
-      platformChannelSpecifics,
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
     );
   }
 

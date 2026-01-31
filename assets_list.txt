@@ -1,8 +1,0 @@
-assets:
-icon
-images
-
-assets/icon:
-funguard_icon.png
-
-assets/images:

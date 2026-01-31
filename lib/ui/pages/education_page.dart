@@ -25,7 +25,7 @@ class EducationPage extends StatelessWidget {
             const Text('Popüler Makaleler', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
             _buildArticleItem(
-              icon: Icons.hook,
+              icon: Icons.phishing,
               iconColor: Colors.blue,
               title: 'Phishing Nedir?',
               subtitle: 'Sahte e-postaları ve linkleri na...',
